@@ -1,0 +1,29 @@
+{
+  "name": "@chatverse/group-package",
+  "version": "0.1.0",
+  "description": "Portable ChatVerse group package codec",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chatverse/core": "*",
+    "fflate": "^0.8.2"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  }
+}

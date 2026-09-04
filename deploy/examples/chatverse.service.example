@@ -1,0 +1,20 @@
+[Unit]
+Description=ChatVerse World Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/srv/chatverse
+ExecStart=/usr/bin/node /srv/chatverse/apps/world-server/dist/index.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=8787
+
+# Put secrets in a root-owned environment file outside the repository when
+# server-managed provider credentials are required.
+# EnvironmentFile=/etc/chatverse/server.env
+
+[Install]
+WantedBy=multi-user.target

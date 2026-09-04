@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+dist
+**/dist
+**/.env
+.git
+.gitignore
+.codex
+.agents
+*.md
+!docs/
+!docs/*.md
+start.bat
+start-web.sh

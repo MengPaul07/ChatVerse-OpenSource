@@ -1,0 +1,29 @@
+{
+  "name": "@chatverse/world-authoring",
+  "version": "0.1.0",
+  "description": "World draft authoring, validation, compilation, and agent runtime for ChatVerse",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chatverse/core": "*"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  }
+}

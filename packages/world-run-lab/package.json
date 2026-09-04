@@ -1,0 +1,33 @@
+{
+  "name": "@chatverse/world-run-lab",
+  "version": "0.1.0",
+  "description": "Black-box long-run acceptance lab for ChatVerse worlds",
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chatverse/core": "*",
+    "@chatverse/world-benchmark": "*",
+    "@chatverse/world-authoring": "*",
+    "@chatverse/world-source": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.2",
+    "tsup": "^8.5.0"
+  }
+}

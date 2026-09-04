@@ -1,0 +1,38 @@
+{
+  "name": "@chatverse/core",
+  "version": "0.1.0",
+  "description": "ChatVerse 核心引擎 — 零平台依赖，纯 TypeScript",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "import": "./dist/testing.js",
+      "require": "./dist/testing.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/testing.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts src/testing.ts --format esm,cjs --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.98.1",
+    "openai": "^6.45.0"
+  }
+}

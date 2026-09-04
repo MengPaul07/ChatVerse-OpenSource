@@ -1,0 +1,53 @@
+{
+  "name": "chatverse",
+  "private": true,
+  "description": "事件驱动的 AI 世界编排与创作框架",
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "frontend"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:types": "npm run build -w @chatverse/core && npm run build -w @chatverse/world-source && npm run build -w @chatverse/group-package && npm run build -w @chatverse/world-authoring && npm run build -w @chatverse/world-benchmark",
+    "build:web": "npm run build -w @chatverse/frontend",
+    "build:server": "npm run build -w @chatverse/world-server",
+    "build:benchmarks": "npm run build -w @chatverse/world-benchmark",
+    "cvwb:e2e:server": "npm run build -w @chatverse/core && npm run build -w @chatverse/world-authoring && npm run build -w @chatverse/world-benchmark && npm run build -w @chatverse/world-server && node scripts/world-server-live-e2e.mjs",
+    "cvwb:e2e:galgame": "npm run build -w @chatverse/core && npm run build -w @chatverse/world-authoring && npm run build -w @chatverse/world-server && node scripts/galgame-live-e2e.mjs",
+    "conversation:e2e": "npm run build -w @chatverse/core && npm run build -w @chatverse/world-authoring && npm run build -w @chatverse/world-server && node scripts/conversation-live-e2e.mjs",
+    "world:e2e": "npm run cvwb:e2e:server",
+    "world:galgame:e2e": "npm run cvwb:e2e:galgame",
+    "audit:modules": "node scripts/audit-unused-modules.mjs",
+    "audit:exports": "node scripts/audit-export-candidates.mjs",
+    "audit:architecture": "node scripts/audit-architecture.mjs && npm run audit:modules",
+    "audit": "npm run audit:architecture && npm run audit:exports",
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:core": "npm run dev -w @chatverse/core",
+    "dev:web": "npm run dev -w @chatverse/frontend",
+    "dev:server:app": "npm run dev -w @chatverse/world-server",
+    "dev:server": "npm run build -w @chatverse/core && npm run build -w @chatverse/world-source && npm run build -w @chatverse/world-authoring && concurrently -k -n core,source,authoring,server \"npm run dev:core\" \"npm run dev -w @chatverse/world-source\" \"npm run dev -w @chatverse/world-authoring\" \"npm run dev:server:app\"",
+    "dev:world": "npm run build -w @chatverse/core && npm run build -w @chatverse/world-source && npm run build -w @chatverse/world-authoring && concurrently -k -n core,source,authoring,server,web \"npm run dev:core\" \"npm run dev -w @chatverse/world-source\" \"npm run dev -w @chatverse/world-authoring\" \"npm run dev:server:app\" \"npm run dev:web\"",
+    "test": "npm run test --workspaces --if-present",
+    "cvwb:test": "npm run test -w @chatverse/world-benchmark",
+    "typecheck": "npm run build:types && npm run typecheck --workspaces --if-present",
+    "cvwb:live": "npm run build -w @chatverse/core && npm run build -w @chatverse/world-authoring && npm run build -w @chatverse/world-benchmark && npm run build -w @chatverse/world-run-lab && npm run build -w @chatverse/world-server && node scripts/cvwb-live.mjs",
+    "cvwb:live:studio": "npm run cvwb:live -- --profile=studio",
+    "cvwb:marathon": "npm run build -w @chatverse/core && npm run build -w @chatverse/world-source && npm run build -w @chatverse/world-authoring && npm run build -w @chatverse/world-benchmark && npm run build -w @chatverse/world-run-lab && npm run build -w @chatverse/world-server && node scripts/cvwb-product-marathon.mjs",
+    "cvwb:plan-beat": "npm run build -w @chatverse/core && npm run build -w @chatverse/world-source && npm run build -w @chatverse/world-server && node scripts/plan-beat-quality-live.mjs",
+    "cvwb:narrator-probe": "npm run build -w @chatverse/core && npm run build -w @chatverse/world-server && node scripts/narrator-beat-probe.mjs",
+    "world:benchmark:test": "npm run cvwb:test",
+    "world:benchmark:live": "npm run cvwb:live -- --profile=world",
+    "studio:benchmark:live": "npm run cvwb:live -- --profile=studio",
+    "start": "npm run start -w @chatverse/world-server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "tsx": "^4.22.4",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

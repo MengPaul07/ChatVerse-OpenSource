@@ -1,0 +1,28 @@
+{
+  "name": "@chatverse/world-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./environment": "./dist/environment.js"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts src/environment.ts --format esm --platform node --target node20 --clean",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@chatverse/core": "file:../../packages/core",
+    "@chatverse/world-authoring": "file:../../packages/world-authoring",
+    "dotenv": "^16.6.1"
+  },
+  "devDependencies": {
+    "@chatverse/world-source": "file:../../packages/world-source",
+    "@types/node": "^24.13.2",
+    "tsup": "^8.5.0"
+  }
+}

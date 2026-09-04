@@ -1,0 +1,320 @@
+.world-context-unread,
+.world-communication-unread,
+.world-communication-avatar-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  color: #173027;
+  background: #d6e8a8;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.world-context-unread {
+  justify-self: end;
+}
+
+.world-communication-dock-item {
+  grid-template-columns: 31px minmax(0, 1fr) auto;
+}
+
+.world-communication-unread {
+  width: auto;
+  box-shadow: 0 0 0 3px rgba(214, 232, 168, .12);
+}
+
+.world-communication-avatar,
+.world-communication-header-avatar {
+  position: relative;
+}
+
+.world-communication-avatar-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 17px;
+  height: 17px;
+  border: 2px solid #f6f6f5;
+  padding: 0 3px;
+  color: #fff;
+  background: #a65543;
+  font-size: 8px;
+}
+
+.world-communication-space.is-paused:not(.is-active) {
+  opacity: .72;
+}
+
+.world-communication-header {
+  grid-template-columns: 40px 38px minmax(0, 1fr) auto;
+}
+
+.world-communication-runtime {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(66, 105, 91, .22);
+  border-radius: 6px;
+  padding: 0 10px;
+  color: #42695b;
+  background: #edf4ef;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.world-communication-runtime:hover:not(:disabled) {
+  border-color: rgba(66, 105, 91, .38);
+  background: #e3eee6;
+}
+
+.world-communication-runtime.is-paused {
+  color: #715b2e;
+  border-color: rgba(138, 108, 60, .25);
+  background: #f6eedb;
+}
+
+.world-communication-runtime:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.world-communication-notice.is-paused {
+  color: #6d592f;
+  background: #f7f0df;
+}
+
+.world-communication-notice.is-paused svg {
+  color: #8a6c3c;
+}
+
+/* Keep the communication surface readable on phones and narrow tablets. The
+   conversation rail stays compact while the active chapter owns the available
+   width for messages and the composer. */
+@media (max-width: 760px) {
+  .world-communication-dock,
+  .world-communication-dock.is-collapsed {
+    right: 12px;
+    bottom: calc(12px + var(--safe-area-bottom));
+    width: min(312px, calc(100vw - 24px));
+  }
+
+  .world-communication-overlay {
+    display: block;
+    min-width: 0;
+    min-height: var(--viewport-height);
+    padding: 0;
+    overflow-x: hidden;
+    background: #ededed;
+    backdrop-filter: none;
+  }
+
+  .world-communication-backdrop-close {
+    display: none;
+  }
+
+  .world-communication-window {
+    width: 100%;
+    max-width: none;
+    height: var(--viewport-height);
+    min-height: var(--viewport-height);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: calc(68px + var(--safe-area-top)) minmax(0, 1fr);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .world-communication-spaces {
+    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-rows: calc(68px + var(--safe-area-top));
+    border-right: 0;
+    border-bottom: 1px solid rgba(17, 24, 20, .09);
+  }
+
+  .world-communication-spaces > header {
+    justify-content: center;
+    min-width: 0;
+    padding: var(--safe-area-top) 4px 0;
+    border-bottom: 0;
+  }
+
+  .world-communication-spaces > header > div {
+    display: none;
+  }
+
+  .world-communication-spaces > nav {
+    display: flex;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: var(--safe-area-top) 8px 0 0;
+    scrollbar-width: none;
+  }
+
+  .world-communication-spaces > nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .world-communication-space {
+    width: 58px;
+    min-width: 58px;
+    min-height: 64px;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    align-content: center;
+    gap: 0;
+    padding: 4px;
+  }
+
+  .world-communication-space::before {
+    top: auto;
+    right: 10px;
+    bottom: 0;
+    left: 10px;
+    width: auto;
+    height: 3px;
+    border-radius: 2px 2px 0 0;
+  }
+
+  .world-communication-space > span:last-child,
+  .world-communication-spaces > a {
+    display: none;
+  }
+
+  .world-communication-panel {
+    min-width: 0;
+    min-height: 0;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+  }
+
+  .world-communication-header {
+    min-width: 0;
+    min-height: calc(64px + var(--safe-area-top));
+    grid-template-columns: 40px 34px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding-top: var(--safe-area-top);
+    padding-right: 8px;
+    padding-left: 4px;
+  }
+
+  .world-communication-header-avatar {
+    width: 34px;
+    height: 34px;
+  }
+
+  .world-communication-header > div {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .world-communication-header strong,
+  .world-communication-header small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .world-communication-runtime {
+    min-width: 40px;
+    min-height: 40px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .world-communication-runtime span {
+    display: none;
+  }
+
+  .world-communication-notice {
+    min-width: 0;
+    min-height: 36px;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .world-communication-notice > span {
+    min-width: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    text-overflow: ellipsis;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .world-communication-messages {
+    min-width: 0;
+    min-height: 0;
+    overflow-x: hidden;
+    scrollbar-gutter: auto;
+    padding: 18px 12px 24px;
+  }
+
+  .world-communication-message,
+  .world-communication-message.is-human {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .world-communication-message {
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .world-communication-message.is-human {
+    grid-template-columns: minmax(0, 1fr) 30px;
+  }
+
+  .world-communication-message-avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  .world-communication-message > div {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .world-communication-message header {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .world-communication-message header strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .world-communication-message p {
+    width: fit-content;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .world-communication-narration {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .world-communication-composer {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    padding-right: 12px;
+    padding-left: 12px;
+  }
+
+  .world-communication-composer input {
+    width: 100%;
+  }
+}

@@ -1,0 +1,24 @@
+node_modules/
+dist/
+dist-cjs/
+dist-esm/
+packages/core/dist-cjs/
+packages/core/dist-esm/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+!**/.env.example
+.env.local
+.artifacts/
+demo/.env
+.claude/
+
+# Local credentials and operational artifacts must never enter the source repo.
+*.pem
+*.key
+*.p12
+*.pfx
+.deploy-release.tgz
+.deploy-release/
+.ops-staging/
