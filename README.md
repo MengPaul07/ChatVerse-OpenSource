@@ -32,10 +32,14 @@ ChatVerse 是一个事件驱动的可运行世界创作与编排工具。你可�
 - **本地优先**：作品与视觉素材保存在浏览器 IndexedDB；模型连接采用 BYOK，服务端不持久化作品和 API Key。
 
 <p align="center">
-  <img src="docs/assets/readme/galgame-stage.png" alt="ChatVerse Galgame 舞台演出实机画面" width="100%" />
+  <img src="docs/assets/readme/galgame-stage-live.png" alt="ChatVerse Galgame 舞台演出实机画面" width="100%" />
 </p>
 
-<p align="center"><sub>实机演出：同一世界可在连续消息流与 Galgame 舞台之间切换。</sub></p>
+<p align="center">
+  <img src="docs/assets/readme/world-page-live.png" alt="ChatVerse 普通世界页实机画面" width="100%" />
+</p>
+
+<p align="center"><sub>实机演出：同一个世界既可以连续阅读，也可以进入 Galgame 舞台逐棒参与。</sub></p>
 
 ## 核心体验
 
