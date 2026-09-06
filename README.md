@@ -68,6 +68,7 @@ ChatVerse 是一个事件驱动的可运行世界创作与编排工具。你可�
 
 ## 社区
 
+- 线上前端：<https://world.chatverse.fun>（首次使用请在设置中配置自己的模型连接）
 - QQ 群：`608677461`
 - GitHub：<https://github.com/MengPaul07/ChatVerse-OpenSource>
 
