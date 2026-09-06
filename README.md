@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://world.chatverse.fun">在线体验</a> ·
+  <a href="https://github.com/MengPaul07/ChatVerse-OpenSource">GitHub 开源仓库</a> ·
   <a href="docs/product-doc.md">产品文档</a> ·
   <a href="docs/API.md">Core API</a> ·
   <a href="docs/world-benchmark.md">WorldBench</a>
@@ -64,6 +65,11 @@ ChatVerse 是一个事件驱动的可运行世界创作与编排工具。你可�
 - **玩家提案**：到玩家回合时，系统根据玩家角色卡生成 2–4 个明显不同的合理选项与一个自动代演选项；也可以自由输入。
 - **视觉呈现**：按当前幕自动生成横向背景与角色立绘（支持 6 家图像服务，可上传自定义立绘）。
 - **自动代演**：开启后玩家回合由提案自动提交，适合全程旁观。
+
+## 社区
+
+- QQ 群：`608677461`
+- GitHub：<https://github.com/MengPaul07/ChatVerse-OpenSource>
 
 ## 运行模型
 
