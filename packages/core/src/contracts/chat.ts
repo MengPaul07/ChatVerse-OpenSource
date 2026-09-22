@@ -120,8 +120,8 @@ export type { CharacterStatePatch } from "./actor-state.js";
 
 /** ChatVerse 引擎配置。至少需要提供一个 Provider。 */
 export type ChatVerseConfig = (
-  | { provider: ChatProvider; directorProvider?: ChatProvider; characterProvider?: ChatProvider }
-  | { directorProvider: ChatProvider; characterProvider?: ChatProvider }
+  | { provider: ChatProvider; directorProvider?: ChatProvider; narratorProvider?: ChatProvider; characterProvider?: ChatProvider }
+  | { directorProvider: ChatProvider; narratorProvider?: ChatProvider; characterProvider?: ChatProvider }
 ) & {
   /** Optional runtime host shared by sessions created through this engine. */
   runtime?: RuntimeHost;

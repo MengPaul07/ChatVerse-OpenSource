@@ -55,17 +55,20 @@ export class ProviderRuntime {
 
 function createMutableProviderPair(initial: ProviderPair): MutableProviderPair {
   const director = mutableChatProvider(initial.directorProvider);
+  const narrator = mutableChatProvider(initial.narratorProvider ?? initial.characterProvider);
   const character = mutableChatProvider(initial.characterProvider);
   const authoring = mutableChatProvider(initial.authoringProvider ?? initial.directorProvider);
   const research = mutableResearchProvider(initial.researchProvider);
 
   return {
     directorProvider: director.provider,
+    narratorProvider: narrator.provider,
     characterProvider: character.provider,
     authoringProvider: authoring.provider,
     researchProvider: research.provider,
     replace(next) {
       director.replace(next.directorProvider);
+      narrator.replace(next.narratorProvider ?? next.characterProvider);
       character.replace(next.characterProvider);
       authoring.replace(next.authoringProvider ?? next.directorProvider);
       research.replace(next.researchProvider);
@@ -127,6 +130,7 @@ export function providerConfigKey(config?: ProviderRequestConfig): string | unde
     config.baseURL,
     config.model,
     config.directorModel,
+    config.narratorModel,
     config.characterModel,
     config.authoringModel,
     config.research?.protocol,

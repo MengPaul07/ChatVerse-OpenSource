@@ -40,6 +40,7 @@ const ENV_KEYS = [
   "ANTHROPIC_BASE_URL",
   "ANTHROPIC_MODEL",
   "DIRECTOR_MODEL",
+  "NARRATOR_MODEL",
   "CHARACTER_MODEL",
   "AUTHORING_MODEL",
   "AUTHORING_RESEARCH_MODEL",
@@ -83,7 +84,7 @@ describe("environment provider selection", () => {
 
     await createEnvironmentProviders();
 
-    expect(mocks.chat).toHaveBeenCalledTimes(3);
+    expect(mocks.chat).toHaveBeenCalledTimes(4);
     expect(mocks.chat).toHaveBeenNthCalledWith(1, expect.objectContaining({
       apiKey: "deep-key",
       baseURL: "https://api.deepseek.com",
@@ -102,7 +103,7 @@ describe("environment provider selection", () => {
       providerOptions: { anthropic: { extendedThinking: true } },
     });
 
-    expect(mocks.anthropic).toHaveBeenCalledTimes(3);
+    expect(mocks.anthropic).toHaveBeenCalledTimes(4);
     expect(mocks.anthropic).toHaveBeenCalledWith(expect.objectContaining({
       apiKey: "anthropic-key",
       model: "claude-test",
@@ -128,7 +129,7 @@ describe("environment provider selection", () => {
       },
     });
 
-    expect(mocks.responses).toHaveBeenCalledTimes(3);
+    expect(mocks.responses).toHaveBeenCalledTimes(4);
     expect(mocks.responses).toHaveBeenCalledWith(expect.objectContaining({
       providerName: "Responses Gateway",
       model: "responses-model",
@@ -184,6 +185,7 @@ describe("environment provider selection", () => {
       apiKey: "test-key",
       model: "shared-model",
       directorModel: "director-model",
+      narratorModel: "narrator-model",
       characterModel: "character-model",
       authoringModel: "authoring-model",
       modelProfile,
@@ -194,10 +196,14 @@ describe("environment provider selection", () => {
       modelProfile,
     }));
     expect(mocks.chat).toHaveBeenNthCalledWith(2, expect.objectContaining({
-      model: "character-model",
+      model: "narrator-model",
       modelProfile: undefined,
     }));
     expect(mocks.chat).toHaveBeenNthCalledWith(3, expect.objectContaining({
+      model: "character-model",
+      modelProfile: undefined,
+    }));
+    expect(mocks.chat).toHaveBeenNthCalledWith(4, expect.objectContaining({
       model: "authoring-model",
       modelProfile: undefined,
     }));

@@ -2908,6 +2908,12 @@ button.group-row-main { width: 100%; cursor: pointer; }
 .model-guide-rail > span.is-done i { border-color: var(--signal); color: white; background: var(--signal); }
 .model-guide-rail > svg { position: absolute; top: 12px; right: 12px; color: var(--signal); }
 .provider-settings-advice { display: flex; align-items: flex-start; gap: 10px; margin-top: 22px; padding: 12px 13px; border-left: 3px solid #b98b3b; color: var(--ink-secondary); background: #fffaf1; }
+.provider-role-models { margin: 28px 0 0; padding: 20px 0 0; border: 0; border-top: 1px solid var(--line); }
+.provider-role-models legend { padding: 0; color: var(--ink); font-size: 14px; font-weight: 700; }
+.provider-role-models > p { margin: 6px 0 0; color: var(--ink-tertiary); font-size: 12px; line-height: 18px; }
+.provider-role-model-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 16px; margin-top: 16px; }
+.provider-role-model-field { min-width: 0; margin-top: 0; }
+@media (max-width: 640px) { .provider-role-model-grid { grid-template-columns: 1fr; } }
 .provider-settings-advice > svg { flex: 0 0 auto; margin-top: 1px; color: #9b6a1f; }
 .provider-settings-advice > div { display: grid; min-width: 0; gap: 4px; }
 .provider-settings-advice strong { color: var(--ink); font-size: 12px; }

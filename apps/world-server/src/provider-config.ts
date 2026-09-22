@@ -23,6 +23,7 @@ export interface ProviderRequestConfig {
   /** Shared model used by all roles when role-specific models are absent. */
   model?: string;
   directorModel?: string;
+  narratorModel?: string;
   characterModel?: string;
   authoringModel?: string;
   providerOptions?: Record<string, unknown>;
@@ -38,6 +39,10 @@ export type ProviderFactory = (
 export const PROVIDER_KEY_HEADER = "x-chatverse-api-key";
 export const PROVIDER_BASE_URL_HEADER = "x-chatverse-api-base-url";
 export const PROVIDER_MODEL_HEADER = "x-chatverse-model";
+export const PROVIDER_DIRECTOR_MODEL_HEADER = "x-chatverse-director-model";
+export const PROVIDER_NARRATOR_MODEL_HEADER = "x-chatverse-narrator-model";
+export const PROVIDER_ACTOR_MODEL_HEADER = "x-chatverse-actor-model";
+export const PROVIDER_STUDIO_MODEL_HEADER = "x-chatverse-studio-model";
 export const PROVIDER_RESEARCH_MODEL_HEADER = "x-chatverse-research-model";
 export const RESEARCH_PROVIDER_KEY_HEADER = "x-chatverse-research-api-key";
 export const RESEARCH_PROVIDER_BASE_URL_HEADER = "x-chatverse-research-api-base-url";

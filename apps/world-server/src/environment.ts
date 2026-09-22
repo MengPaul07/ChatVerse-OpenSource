@@ -38,6 +38,7 @@ export async function createEnvironmentProviders(config: ProviderRequestConfig =
   const providerOptions = config.providerOptions ?? readProviderOptionsFromEnvironment();
   const modelProfile = config.modelProfile;
   const directorModel = config.directorModel?.trim() || process.env.DIRECTOR_MODEL?.trim() || sharedModel;
+  const narratorModel = config.narratorModel?.trim() || process.env.NARRATOR_MODEL?.trim() || sharedModel;
   const characterModel = config.characterModel?.trim() || process.env.CHARACTER_MODEL?.trim() || sharedModel;
   const authoringModel = config.authoringModel?.trim()
     || process.env.AUTHORING_MODEL?.trim()
@@ -45,7 +46,7 @@ export async function createEnvironmentProviders(config: ProviderRequestConfig =
     || sharedModel
     || undefined;
   const timeoutMs = configuredProviderTimeoutMs();
-  const [directorProvider, characterProvider, authoringProvider] = await Promise.all([
+  const [directorProvider, narratorProvider, characterProvider, authoringProvider] = await Promise.all([
     createConfiguredProvider({
       protocol,
       apiKey,
@@ -54,6 +55,17 @@ export async function createEnvironmentProviders(config: ProviderRequestConfig =
       providerOptions,
       modelProfile: profileForModel(modelProfile, directorModel),
       model: directorModel,
+      timeoutMs,
+      maxRetries: 0,
+    }),
+    createConfiguredProvider({
+      protocol,
+      apiKey,
+      baseURL,
+      providerName,
+      providerOptions,
+      modelProfile: profileForModel(modelProfile, narratorModel),
+      model: narratorModel,
       timeoutMs,
       maxRetries: 0,
     }),
@@ -84,7 +96,7 @@ export async function createEnvironmentProviders(config: ProviderRequestConfig =
   const researchProvider = researchConfig
     ? createWebResearchProvider(researchConfig)
     : undefined;
-  return { directorProvider, characterProvider, authoringProvider, researchProvider };
+  return { directorProvider, narratorProvider, characterProvider, authoringProvider, researchProvider };
 }
 
 function createConfiguredProvider(input: {

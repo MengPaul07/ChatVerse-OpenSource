@@ -11,6 +11,10 @@ import type { WorldDraftOperation } from "@chatverse/world-authoring";
 import { HttpError } from "./errors.js";
 import {
   PROVIDER_BASE_URL_HEADER,
+  PROVIDER_DIRECTOR_MODEL_HEADER,
+  PROVIDER_NARRATOR_MODEL_HEADER,
+  PROVIDER_ACTOR_MODEL_HEADER,
+  PROVIDER_STUDIO_MODEL_HEADER,
   PROVIDER_KEY_HEADER,
   PROVIDER_MODEL_HEADER,
   PROVIDER_NAME_HEADER,
@@ -55,6 +59,10 @@ export function providerConfigFromRequest(request: IncomingMessage): ProviderReq
   const apiKey = readOptionalHeader(request, PROVIDER_KEY_HEADER);
   const baseURL = readOptionalHeader(request, PROVIDER_BASE_URL_HEADER);
   const model = readOptionalHeader(request, PROVIDER_MODEL_HEADER);
+  const directorModel = readOptionalHeader(request, PROVIDER_DIRECTOR_MODEL_HEADER);
+  const narratorModel = readOptionalHeader(request, PROVIDER_NARRATOR_MODEL_HEADER);
+  const characterModel = readOptionalHeader(request, PROVIDER_ACTOR_MODEL_HEADER);
+  const authoringModel = readOptionalHeader(request, PROVIDER_STUDIO_MODEL_HEADER);
   const researchModel = readOptionalHeader(request, PROVIDER_RESEARCH_MODEL_HEADER);
   const researchApiKey = readOptionalHeader(request, RESEARCH_PROVIDER_KEY_HEADER);
   const researchBaseURL = readOptionalHeader(request, RESEARCH_PROVIDER_BASE_URL_HEADER);
@@ -65,7 +73,8 @@ export function providerConfigFromRequest(request: IncomingMessage): ProviderReq
   const providerName = readOptionalUtf8Header(request, PROVIDER_NAME_HEADER);
   const optionsValue = readOptionalUtf8Header(request, PROVIDER_OPTIONS_HEADER);
   const modelProfileValue = readOptionalUtf8Header(request, PROVIDER_MODEL_PROFILE_HEADER);
-  if (!apiKey && !baseURL && !model && !protocolValue && !providerName && !optionsValue && !modelProfileValue
+  if (!apiKey && !baseURL && !model && !directorModel && !narratorModel && !characterModel && !authoringModel
+    && !protocolValue && !providerName && !optionsValue && !modelProfileValue
     && !researchApiKey && !researchBaseURL && !researchModel && !researchProtocolValue
     && !researchProviderName && !researchOptionsValue) {
     return undefined;
@@ -94,6 +103,10 @@ export function providerConfigFromRequest(request: IncomingMessage): ProviderReq
     apiKey,
     baseURL,
     model,
+    directorModel,
+    narratorModel,
+    characterModel,
+    authoringModel,
     protocol,
     providerName,
     providerOptions,

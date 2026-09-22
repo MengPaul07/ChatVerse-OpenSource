@@ -64,6 +64,10 @@ function ModelSettingsPage() {
   const [apiKey, setApiKey] = useState(initialSettings.apiKey);
   const [baseURL, setBaseURL] = useState(initialSettings.baseURL);
   const [model, setModel] = useState(initialSettings.model);
+  const [directorModel, setDirectorModel] = useState(initialSettings.directorModel);
+  const [narratorModel, setNarratorModel] = useState(initialSettings.narratorModel);
+  const [actorModel, setActorModel] = useState(initialSettings.actorModel);
+  const [studioModel, setStudioModel] = useState(initialSettings.studioModel);
   const [providerOptions, setProviderOptions] = useState<Record<string, unknown>>(initialSettings.providerOptions);
   const [modelProfile, setModelProfile] = useState(initialSettings.modelProfile);
   const [isSaved, setIsSaved] = useState(() => Boolean(
@@ -112,7 +116,12 @@ function ModelSettingsPage() {
     setError("");
     setProviderName(definition.providerName);
     setBaseURL(definition.baseURL);
-    setModel(definition.models[0]?.id ?? "");
+    const nextModel = definition.models[0]?.id ?? "";
+    setModel(nextModel);
+    setDirectorModel(nextModel);
+    setNarratorModel(nextModel);
+    setActorModel(nextModel);
+    setStudioModel(nextModel);
     setModelProfile(definition.models[0]
       ? getProviderModelProfile(definition, definition.models[0].id)
       : undefined);
@@ -141,6 +150,10 @@ function ModelSettingsPage() {
       apiKey: apiKey.trim(),
       baseURL: normalizedBaseURL,
       model: model.trim(),
+      directorModel: directorModel.trim() || model.trim(),
+      narratorModel: narratorModel.trim() || model.trim(),
+      actorModel: actorModel.trim() || model.trim(),
+      studioModel: studioModel.trim() || model.trim(),
       protocol,
       providerName: providerName.trim() || "自定义服务商",
       preset,
@@ -163,6 +176,10 @@ function ModelSettingsPage() {
       setApiKey(saved.apiKey);
       setBaseURL(saved.baseURL);
       setModel(saved.model);
+      setDirectorModel(saved.directorModel);
+      setNarratorModel(saved.narratorModel);
+      setActorModel(saved.actorModel);
+      setStudioModel(saved.studioModel);
       setProviderOptions(saved.providerOptions);
       setModelProfile(saved.modelProfile);
       setIsSaved(true);
@@ -190,6 +207,10 @@ function ModelSettingsPage() {
     setApiKey(empty.apiKey);
     setBaseURL(empty.baseURL);
     setModel(empty.model);
+    setDirectorModel(empty.directorModel);
+    setNarratorModel(empty.narratorModel);
+    setActorModel(empty.actorModel);
+    setStudioModel(empty.studioModel);
     setProviderOptions(empty.providerOptions);
     setModelProfile(empty.modelProfile);
     setIsSaved(false);
@@ -327,6 +348,39 @@ function ModelSettingsPage() {
             </small>
           )}
         </label>
+        <fieldset className="provider-role-models">
+          <legend>角色模型路由</legend>
+          <p>四类任务可使用不同模型。留空时自动使用上方默认模型。</p>
+          <div className="provider-role-model-grid">
+            {[
+              { id: "studio-model", label: "Studio", hint: "世界创作、资料整理与草稿工具", value: studioModel, setValue: setStudioModel },
+              { id: "director-model", label: "Director", hint: "章节与角色回合规划", value: directorModel, setValue: setDirectorModel },
+              { id: "narrator-model", label: "Narrator", hint: "场景仲裁、旁白与下一位选择", value: narratorModel, setValue: setNarratorModel },
+              { id: "actor-model", label: "Actor", hint: "角色决策、台词与动作", value: actorModel, setValue: setActorModel },
+            ].map((role) => (
+              <label key={role.id} className="provider-settings-field provider-role-model-field" htmlFor={role.id}>
+                <span>{role.label}</span>
+                <input
+                  id={role.id}
+                  list="provider-model-suggestions"
+                  value={role.value}
+                  disabled={isTesting}
+                  onChange={(event) => {
+                    role.setValue(event.target.value);
+                    setIsSaved(false);
+                    setStatus("idle");
+                  }}
+                  placeholder={`默认：${model || "未设置"}`}
+                  spellCheck={false}
+                />
+                <small className="provider-settings-hint">{role.hint}</small>
+              </label>
+            ))}
+          </div>
+          <datalist id="provider-model-suggestions">
+            {selectedPreset.models.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+          </datalist>
+        </fieldset>
         <div className="provider-settings-advice" role="note">
           <Lightbulb size={17} aria-hidden="true" />
           <div>

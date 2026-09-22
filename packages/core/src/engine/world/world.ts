@@ -194,6 +194,7 @@ export class World {
     definitionInput: WorldDefinition,
     private readonly directorProvider: ChatProvider,
     private readonly characterProvider: ChatProvider,
+    private readonly narratorProvider: ChatProvider,
     private readonly runtime: RuntimeHost,
     options: CreateWorldOptions = {},
   ) {
@@ -261,6 +262,11 @@ export class World {
       );
       this.characterProvider = observeProviderSession(
         this.characterProvider,
+        (event) => this.diagnostics.traceProviderSession(event),
+        () => this.runtime.clock.now(),
+      );
+      this.narratorProvider = observeProviderSession(
+        this.narratorProvider,
         (event) => this.diagnostics.traceProviderSession(event),
         () => this.runtime.clock.now(),
       );
@@ -385,7 +391,7 @@ export class World {
       (observation) => this.diagnostics.traceProviderUsage("actor_memory", observation),
     );
     const observedNarratorProvider = observeProviderUsage(
-      this.characterProvider,
+      this.narratorProvider,
       (observation) => this.diagnostics.traceProviderUsage("world_narrator", observation),
     );
     const observedPlayerProvider = observeProviderUsage(

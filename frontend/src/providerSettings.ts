@@ -20,6 +20,10 @@ const STORAGE_KEY = "chatverse:provider-settings";
 const API_KEY_HEADER = "X-ChatVerse-API-Key";
 const API_BASE_URL_HEADER = "X-ChatVerse-API-Base-URL";
 const MODEL_HEADER = "X-ChatVerse-Model";
+const DIRECTOR_MODEL_HEADER = "X-ChatVerse-Director-Model";
+const NARRATOR_MODEL_HEADER = "X-ChatVerse-Narrator-Model";
+const ACTOR_MODEL_HEADER = "X-ChatVerse-Actor-Model";
+const STUDIO_MODEL_HEADER = "X-ChatVerse-Studio-Model";
 const PROTOCOL_HEADER = "X-ChatVerse-Protocol";
 const PROVIDER_HEADER = "X-ChatVerse-Provider";
 const PROVIDER_OPTIONS_HEADER = "X-ChatVerse-Provider-Options";
@@ -33,6 +37,10 @@ export interface ProviderSettings {
   apiKey: string;
   baseURL: string;
   model: string;
+  directorModel: string;
+  narratorModel: string;
+  actorModel: string;
+  studioModel: string;
   providerOptions: Record<string, unknown>;
   modelProfile?: ProviderModelProfile;
 }
@@ -56,6 +64,10 @@ const EMPTY_SETTINGS: ProviderSettings = {
   apiKey: "",
   baseURL: getProviderPresetDefinition("deepseek").baseURL,
   model: getProviderPresetDefinition("deepseek").models[0].id,
+  directorModel: getProviderPresetDefinition("deepseek").models[0].id,
+  narratorModel: getProviderPresetDefinition("deepseek").models[0].id,
+  actorModel: getProviderPresetDefinition("deepseek").models[0].id,
+  studioModel: getProviderPresetDefinition("deepseek").models[0].id,
   providerOptions: getProviderPresetDefinition("deepseek").providerOptions ?? {},
   modelProfile: getProviderModelProfile(
     getProviderPresetDefinition("deepseek"),
@@ -94,6 +106,10 @@ export function readProviderSettings(): ProviderSettings {
       apiKey: firstNonEmptyString(value.apiKey, value.api_key),
       baseURL: storedBaseURL || definition.baseURL,
       model,
+      directorModel: firstNonEmptyString(value.directorModel) || model,
+      narratorModel: firstNonEmptyString(value.narratorModel) || model,
+      actorModel: firstNonEmptyString(value.actorModel, (value as Record<string, unknown>).characterModel) || model,
+      studioModel: firstNonEmptyString(value.studioModel, (value as Record<string, unknown>).authoringModel) || model,
       providerOptions: mergeProviderOptions(
         definition.providerOptions,
         isRecord(value.providerOptions) ? value.providerOptions : undefined,
@@ -132,6 +148,10 @@ export function saveProviderSettings(settings: ProviderSettings): ProviderSettin
     apiKey: settings.apiKey.trim(),
     baseURL: settings.baseURL.trim(),
     model: settings.model.trim(),
+    directorModel: settings.directorModel.trim() || settings.model.trim(),
+    narratorModel: settings.narratorModel.trim() || settings.model.trim(),
+    actorModel: settings.actorModel.trim() || settings.model.trim(),
+    studioModel: settings.studioModel.trim() || settings.model.trim(),
     providerOptions: isRecord(settings.providerOptions) ? settings.providerOptions : {},
     modelProfile: settings.modelProfile
       ?? getProviderModelProfile(getProviderPresetDefinition(settings.preset), settings.model),
@@ -148,6 +168,7 @@ export function clearProviderSettings(): void {
 
 export function providerRequestHeadersForSettings(
   settings: Pick<ProviderSettings, "apiKey" | "baseURL" | "model">
+    & Partial<Pick<ProviderSettings, "directorModel" | "narratorModel" | "actorModel" | "studioModel">>
     & Partial<Pick<ProviderSettings, "protocol" | "providerName" | "providerOptions" | "preset" | "modelProfile">>,
   headers?: HeadersInit,
 ): Record<string, string> {
@@ -162,6 +183,10 @@ export function providerRequestHeadersForSettings(
   if (settings.apiKey.trim()) result[API_KEY_HEADER] = settings.apiKey.trim();
   if (settings.baseURL.trim()) result[API_BASE_URL_HEADER] = settings.baseURL.trim();
   if (settings.model.trim()) result[MODEL_HEADER] = settings.model.trim();
+  if (settings.directorModel?.trim()) result[DIRECTOR_MODEL_HEADER] = settings.directorModel.trim();
+  if (settings.narratorModel?.trim()) result[NARRATOR_MODEL_HEADER] = settings.narratorModel.trim();
+  if (settings.actorModel?.trim()) result[ACTOR_MODEL_HEADER] = settings.actorModel.trim();
+  if (settings.studioModel?.trim()) result[STUDIO_MODEL_HEADER] = settings.studioModel.trim();
   if (settings.protocol) result[PROTOCOL_HEADER] = settings.protocol;
   if (settings.providerName?.trim()) result[PROVIDER_HEADER] = encodeUtf8Header(settings.providerName.trim());
   if (settings.providerOptions && Object.keys(settings.providerOptions).length > 0) {

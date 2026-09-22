@@ -51,6 +51,9 @@ export function withProviderConcurrencyGate(
 function wrapProviderPair(pair: ProviderPair, gate: ProviderConcurrencyGate): ProviderPair {
   return {
     directorProvider: wrapChatProvider(pair.directorProvider, gate),
+    narratorProvider: pair.narratorProvider
+      ? wrapChatProvider(pair.narratorProvider, gate)
+      : undefined,
     characterProvider: wrapChatProvider(pair.characterProvider, gate),
     authoringProvider: pair.authoringProvider
       ? wrapChatProvider(pair.authoringProvider, gate)

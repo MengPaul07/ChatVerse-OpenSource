@@ -38,6 +38,10 @@ describe("provider settings", () => {
     expect(settings.baseURL).toBe("https://api.deepseek.com");
     expect(settings.model).toBe("deepseek-v4-flash");
     expect(settings.protocol).toBe("openai-chat");
+    expect(settings.directorModel).toBe("deepseek-v4-flash");
+    expect(settings.narratorModel).toBe("deepseek-v4-flash");
+    expect(settings.actorModel).toBe("deepseek-v4-flash");
+    expect(settings.studioModel).toBe("deepseek-v4-flash");
     expect(settings.providerOptions).toMatchObject({
       openai: { thinking: true, reasoningEffort: true },
     });
@@ -50,6 +54,10 @@ describe("provider settings", () => {
       apiKey: "secret",
       baseURL: "https://api.moonshot.cn/v1",
       model: "kimi-k3",
+      directorModel: "kimi-director",
+      narratorModel: "kimi-narrator",
+      actorModel: "kimi-actor",
+      studioModel: "kimi-studio",
     }));
 
     const headers = providerRequestHeaders({ "Content-Type": "application/json" });
@@ -58,6 +66,10 @@ describe("provider settings", () => {
       "X-ChatVerse-API-Key": "secret",
       "X-ChatVerse-API-Base-URL": "https://api.moonshot.cn/v1",
       "X-ChatVerse-Model": "kimi-k3",
+      "X-ChatVerse-Director-Model": "kimi-director",
+      "X-ChatVerse-Narrator-Model": "kimi-narrator",
+      "X-ChatVerse-Actor-Model": "kimi-actor",
+      "X-ChatVerse-Studio-Model": "kimi-studio",
       "X-ChatVerse-Protocol": "openai-chat",
       "X-ChatVerse-Provider": "chatverse-utf8:Moonshot",
     });

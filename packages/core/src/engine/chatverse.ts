@@ -21,6 +21,7 @@ import { World } from "./world/index.js";
  */
 export class ChatVerse {
   private directorProvider: ChatProvider;
+  private narratorProvider: ChatProvider;
   private characterProvider: ChatProvider;
   private runtime: RuntimeHost;
 
@@ -30,11 +31,15 @@ export class ChatVerse {
     const cp = ("provider" in config ? config.provider : undefined)
       ?? ("characterProvider" in config ? config.characterProvider : undefined)
       ?? dp;
+    const np = ("provider" in config ? config.provider : undefined)
+      ?? ("narratorProvider" in config ? config.narratorProvider : undefined)
+      ?? cp;
 
-    if (!dp || !cp) {
+    if (!dp || !cp || !np) {
       throw new Error("ChatVerse requires a provider.");
     }
     this.directorProvider = dp;
+    this.narratorProvider = np;
     this.characterProvider = cp;
     this.runtime = config.runtime ?? new InProcessRuntimeHost();
   }
@@ -44,6 +49,7 @@ export class ChatVerse {
       definition,
       this.directorProvider,
       this.characterProvider,
+      this.narratorProvider,
       this.runtime,
       options,
     );

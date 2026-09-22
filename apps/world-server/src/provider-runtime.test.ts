@@ -28,6 +28,7 @@ function researchProvider(label: string): WebResearchProvider {
 function pair(label: string, research = false): ProviderPair {
   return {
     directorProvider: chatProvider(`${label}:director`),
+    narratorProvider: chatProvider(`${label}:narrator`),
     characterProvider: chatProvider(`${label}:character`),
     authoringProvider: chatProvider(`${label}:authoring`),
     ...(research ? { researchProvider: researchProvider(`${label}:research`) } : {}),
@@ -58,6 +59,10 @@ describe("ProviderRuntime", () => {
       systemPrompt: "",
       userPrompt: "",
     })).toBe("new-model:director");
+    expect(await runtime.providers.narratorProvider!.complete({
+      systemPrompt: "",
+      userPrompt: "",
+    })).toBe("new-model:narrator");
     expect(await runtime.providers.authoringProvider!.complete({
       systemPrompt: "",
       userPrompt: "",
