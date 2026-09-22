@@ -24,6 +24,7 @@ const DIRECTOR_MODEL_HEADER = "X-ChatVerse-Director-Model";
 const NARRATOR_MODEL_HEADER = "X-ChatVerse-Narrator-Model";
 const ACTOR_MODEL_HEADER = "X-ChatVerse-Actor-Model";
 const STUDIO_MODEL_HEADER = "X-ChatVerse-Studio-Model";
+const ROLE_PROVIDERS_HEADER = "X-ChatVerse-Role-Providers";
 const PROTOCOL_HEADER = "X-ChatVerse-Protocol";
 const PROVIDER_HEADER = "X-ChatVerse-Provider";
 const PROVIDER_OPTIONS_HEADER = "X-ChatVerse-Provider-Options";
@@ -41,8 +42,21 @@ export interface ProviderSettings {
   narratorModel: string;
   actorModel: string;
   studioModel: string;
+  roleProviders: Partial<Record<ProviderRole, RoleProviderSettings>>;
   providerOptions: Record<string, unknown>;
   modelProfile?: ProviderModelProfile;
+}
+
+export type ProviderRole = "studio" | "director" | "narrator" | "actor";
+
+export interface RoleProviderSettings {
+  preset: ProviderPreset;
+  protocol: ProviderProtocol;
+  providerName: string;
+  apiKey: string;
+  baseURL: string;
+  model: string;
+  providerOptions: Record<string, unknown>;
 }
 
 type PersistedProviderSettings = Partial<ProviderSettings> & {
@@ -68,6 +82,7 @@ const EMPTY_SETTINGS: ProviderSettings = {
   narratorModel: getProviderPresetDefinition("deepseek").models[0].id,
   actorModel: getProviderPresetDefinition("deepseek").models[0].id,
   studioModel: getProviderPresetDefinition("deepseek").models[0].id,
+  roleProviders: {},
   providerOptions: getProviderPresetDefinition("deepseek").providerOptions ?? {},
   modelProfile: getProviderModelProfile(
     getProviderPresetDefinition("deepseek"),
@@ -110,6 +125,7 @@ export function readProviderSettings(): ProviderSettings {
       narratorModel: firstNonEmptyString(value.narratorModel) || model,
       actorModel: firstNonEmptyString(value.actorModel, (value as Record<string, unknown>).characterModel) || model,
       studioModel: firstNonEmptyString(value.studioModel, (value as Record<string, unknown>).authoringModel) || model,
+      roleProviders: normalizeRoleProviders(value.roleProviders),
       providerOptions: mergeProviderOptions(
         definition.providerOptions,
         isRecord(value.providerOptions) ? value.providerOptions : undefined,
@@ -152,6 +168,7 @@ export function saveProviderSettings(settings: ProviderSettings): ProviderSettin
     narratorModel: settings.narratorModel.trim() || settings.model.trim(),
     actorModel: settings.actorModel.trim() || settings.model.trim(),
     studioModel: settings.studioModel.trim() || settings.model.trim(),
+    roleProviders: normalizeRoleProviders(settings.roleProviders),
     providerOptions: isRecord(settings.providerOptions) ? settings.providerOptions : {},
     modelProfile: settings.modelProfile
       ?? getProviderModelProfile(getProviderPresetDefinition(settings.preset), settings.model),
@@ -168,7 +185,7 @@ export function clearProviderSettings(): void {
 
 export function providerRequestHeadersForSettings(
   settings: Pick<ProviderSettings, "apiKey" | "baseURL" | "model">
-    & Partial<Pick<ProviderSettings, "directorModel" | "narratorModel" | "actorModel" | "studioModel">>
+    & Partial<Pick<ProviderSettings, "directorModel" | "narratorModel" | "actorModel" | "studioModel" | "roleProviders">>
     & Partial<Pick<ProviderSettings, "protocol" | "providerName" | "providerOptions" | "preset" | "modelProfile">>,
   headers?: HeadersInit,
 ): Record<string, string> {
@@ -187,6 +204,19 @@ export function providerRequestHeadersForSettings(
   if (settings.narratorModel?.trim()) result[NARRATOR_MODEL_HEADER] = settings.narratorModel.trim();
   if (settings.actorModel?.trim()) result[ACTOR_MODEL_HEADER] = settings.actorModel.trim();
   if (settings.studioModel?.trim()) result[STUDIO_MODEL_HEADER] = settings.studioModel.trim();
+  if ((settings as Partial<ProviderSettings>).roleProviders
+    && Object.keys((settings as Partial<ProviderSettings>).roleProviders ?? {}).length > 0) {
+    const roleProviders = (settings as Partial<ProviderSettings>).roleProviders ?? {};
+    const payload = Object.fromEntries(Object.entries(roleProviders).map(([role, connection]) => [role, {
+      protocol: connection?.protocol,
+      providerName: connection?.providerName,
+      apiKey: connection?.apiKey,
+      baseURL: connection?.baseURL,
+      model: connection?.model,
+      providerOptions: connection?.providerOptions,
+    }]));
+    result[ROLE_PROVIDERS_HEADER] = encodeUtf8Header(JSON.stringify(payload));
+  }
   if (settings.protocol) result[PROTOCOL_HEADER] = settings.protocol;
   if (settings.providerName?.trim()) result[PROVIDER_HEADER] = encodeUtf8Header(settings.providerName.trim());
   if (settings.providerOptions && Object.keys(settings.providerOptions).length > 0) {
@@ -264,6 +294,27 @@ function firstNonEmptyString(...values: unknown[]): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function normalizeRoleProviders(value: unknown): Partial<Record<ProviderRole, RoleProviderSettings>> {
+  if (!isRecord(value)) return {};
+  const result: Partial<Record<ProviderRole, RoleProviderSettings>> = {};
+  for (const role of ["studio", "director", "narrator", "actor"] as const) {
+    const raw = value[role];
+    if (!isRecord(raw)) continue;
+    const preset = isProviderPreset(raw.preset) ? raw.preset : "custom";
+    const definition = getProviderPresetDefinition(preset);
+    result[role] = {
+      preset,
+      protocol: isProviderProtocol(raw.protocol) ? raw.protocol : providerProtocol(definition),
+      providerName: firstNonEmptyString(raw.providerName) || definition.providerName,
+      apiKey: firstNonEmptyString(raw.apiKey),
+      baseURL: firstNonEmptyString(raw.baseURL) || definition.baseURL,
+      model: firstNonEmptyString(raw.model) || definition.models[0]?.id || "",
+      providerOptions: mergeProviderOptions(definition.providerOptions, isRecord(raw.providerOptions) ? raw.providerOptions : undefined),
+    };
+  }
+  return result;
 }
 
 function encodeUtf8Header(value: string): string {

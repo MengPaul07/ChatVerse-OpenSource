@@ -22,12 +22,15 @@ import {
   PROVIDER_MODEL_PROFILE_HEADER,
   PROVIDER_PROTOCOL_HEADER,
   PROVIDER_RESEARCH_MODEL_HEADER,
+  PROVIDER_ROLE_CONFIGS_HEADER,
   RESEARCH_PROVIDER_BASE_URL_HEADER,
   RESEARCH_PROVIDER_KEY_HEADER,
   RESEARCH_PROVIDER_NAME_HEADER,
   RESEARCH_PROVIDER_OPTIONS_HEADER,
   RESEARCH_PROVIDER_PROTOCOL_HEADER,
   type ProviderRequestConfig,
+  type ProviderRole,
+  type ProviderRoleRequestConfig,
 } from "../provider-config.js";
 import { readJson as readRequestJson } from "./validation.js";
 
@@ -35,6 +38,7 @@ const MAX_REQUEST_BYTES = 512 * 1024;
 const MAX_SOURCE_BUNDLES = 8;
 const MAX_PROVIDER_OPTIONS_BYTES = 8 * 1024;
 const MAX_PROVIDER_MODEL_PROFILE_BYTES = 24 * 1024;
+const MAX_PROVIDER_ROLE_CONFIGS_BYTES = 32 * 1024;
 const UTF8_HEADER_PREFIX = "chatverse-utf8:";
 
 export function optionalImageReference(body: Record<string, unknown>): {
@@ -73,8 +77,9 @@ export function providerConfigFromRequest(request: IncomingMessage): ProviderReq
   const providerName = readOptionalUtf8Header(request, PROVIDER_NAME_HEADER);
   const optionsValue = readOptionalUtf8Header(request, PROVIDER_OPTIONS_HEADER);
   const modelProfileValue = readOptionalUtf8Header(request, PROVIDER_MODEL_PROFILE_HEADER);
+  const roleProvidersValue = readOptionalUtf8Header(request, PROVIDER_ROLE_CONFIGS_HEADER);
   if (!apiKey && !baseURL && !model && !directorModel && !narratorModel && !characterModel && !authoringModel
-    && !protocolValue && !providerName && !optionsValue && !modelProfileValue
+    && !protocolValue && !providerName && !optionsValue && !modelProfileValue && !roleProvidersValue
     && !researchApiKey && !researchBaseURL && !researchModel && !researchProtocolValue
     && !researchProviderName && !researchOptionsValue) {
     return undefined;
@@ -90,6 +95,7 @@ export function providerConfigFromRequest(request: IncomingMessage): ProviderReq
   const modelProfile = modelProfileValue
     ? parseProviderModelProfile(modelProfileValue)
     : undefined;
+  const roleProviders = roleProvidersValue ? parseRoleProviders(roleProvidersValue) : undefined;
   const researchProtocol = researchProtocolValue
     ? parseWebResearchProtocol(researchProtocolValue)
     : undefined;
@@ -111,6 +117,7 @@ export function providerConfigFromRequest(request: IncomingMessage): ProviderReq
     providerName,
     providerOptions,
     modelProfile,
+    roleProviders,
     ...(researchProtocol ? {
       research: {
         protocol: researchProtocol,
@@ -122,6 +129,51 @@ export function providerConfigFromRequest(request: IncomingMessage): ProviderReq
       },
     } : {}),
   };
+}
+
+function parseRoleProviders(value: string): Partial<Record<ProviderRole, ProviderRoleRequestConfig>> {
+  if (Buffer.byteLength(value, "utf8") > MAX_PROVIDER_ROLE_CONFIGS_BYTES) {
+    throw new HttpError(400, "invalid_provider_config", "角色 Provider 配置过大。 ");
+  }
+  let parsed: unknown;
+  try { parsed = JSON.parse(value); } catch {
+    throw new HttpError(400, "invalid_provider_config", "角色 Provider 配置必须是有效 JSON。 ");
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new HttpError(400, "invalid_provider_config", "角色 Provider 配置必须是对象。 ");
+  }
+  const result: Partial<Record<ProviderRole, ProviderRoleRequestConfig>> = {};
+  for (const role of ["director", "narrator", "actor", "studio"] as const) {
+    const raw = (parsed as Record<string, unknown>)[role];
+    if (raw === undefined) continue;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+      throw new HttpError(400, "invalid_provider_config", `${role} Provider 配置必须是对象。`);
+    }
+    const record = raw as Record<string, unknown>;
+    const protocol = record.protocol === undefined ? undefined : parseProviderProtocol(String(record.protocol));
+    const baseURL = optionalRoleString(record.baseURL, `${role}.baseURL`);
+    validateProviderBaseURL(baseURL, `${role} API Base URL`);
+    const providerOptions = record.providerOptions === undefined
+      ? undefined
+      : parseProviderOptions(JSON.stringify(record.providerOptions));
+    result[role] = {
+      protocol,
+      providerName: optionalRoleString(record.providerName, `${role}.providerName`),
+      apiKey: optionalRoleString(record.apiKey, `${role}.apiKey`),
+      baseURL,
+      model: optionalRoleString(record.model, `${role}.model`),
+      providerOptions,
+    };
+  }
+  return result;
+}
+
+function optionalRoleString(value: unknown, field: string): string | undefined {
+  if (value === undefined || value === null || value === "") return undefined;
+  if (typeof value !== "string" || value.length > 2_048) {
+    throw new HttpError(400, "invalid_provider_config", `${field} 必须是长度不超过 2048 的字符串。`);
+  }
+  return value.trim() || undefined;
 }
 
 function validateProviderBaseURL(value: string | undefined, label: string): void {

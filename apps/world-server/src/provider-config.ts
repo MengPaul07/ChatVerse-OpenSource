@@ -26,10 +26,22 @@ export interface ProviderRequestConfig {
   narratorModel?: string;
   characterModel?: string;
   authoringModel?: string;
+  roleProviders?: Partial<Record<ProviderRole, ProviderRoleRequestConfig>>;
   providerOptions?: Record<string, unknown>;
   /** PI-style metadata for the selected concrete model, without credentials. */
   modelProfile?: ProviderModelProfile;
   research?: ResearchProviderRequestConfig;
+}
+
+export type ProviderRole = "director" | "narrator" | "actor" | "studio";
+
+export interface ProviderRoleRequestConfig {
+  protocol?: ProviderProtocol;
+  providerName?: string;
+  apiKey?: string;
+  baseURL?: string;
+  model?: string;
+  providerOptions?: Record<string, unknown>;
 }
 
 export type ProviderFactory = (
@@ -53,6 +65,7 @@ export const PROVIDER_PROTOCOL_HEADER = "x-chatverse-protocol";
 export const PROVIDER_NAME_HEADER = "x-chatverse-provider";
 export const PROVIDER_OPTIONS_HEADER = "x-chatverse-provider-options";
 export const PROVIDER_MODEL_PROFILE_HEADER = "x-chatverse-model-profile";
+export const PROVIDER_ROLE_CONFIGS_HEADER = "x-chatverse-role-providers";
 
 export function hasProviderCredential(
   config: ProviderRequestConfig | undefined,

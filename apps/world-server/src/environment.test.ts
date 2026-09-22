@@ -208,6 +208,27 @@ describe("environment provider selection", () => {
       modelProfile: undefined,
     }));
   });
+
+  it("creates each agent role from its own provider connection", async () => {
+    await createEnvironmentProviders({
+      protocol: "openai-chat",
+      providerName: "Default",
+      apiKey: "default-key",
+      baseURL: "https://default.example/v1",
+      model: "default-model",
+      roleProviders: {
+        director: { protocol: "anthropic-messages", providerName: "Anthropic", apiKey: "director-key", baseURL: "https://api.anthropic.com", model: "claude-director" },
+        narrator: { protocol: "openai-responses", providerName: "Responses", apiKey: "narrator-key", baseURL: "https://responses.example/v1", model: "responses-narrator" },
+        actor: { protocol: "openai-chat", providerName: "Actor Gateway", apiKey: "actor-key", baseURL: "https://actor.example/v1", model: "actor-model" },
+        studio: { protocol: "openai-chat", providerName: "Studio Gateway", apiKey: "studio-key", baseURL: "https://studio.example/v1", model: "studio-model" },
+      },
+    });
+
+    expect(mocks.anthropic).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "director-key", model: "claude-director" }));
+    expect(mocks.responses).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "narrator-key", model: "responses-narrator" }));
+    expect(mocks.chat).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "actor-key", model: "actor-model" }));
+    expect(mocks.chat).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "studio-key", model: "studio-model" }));
+  });
 });
 
 function provider(config: Record<string, unknown>): Record<string, unknown> {

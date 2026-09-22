@@ -15,7 +15,7 @@ import {
 } from "@chatverse/core";
 import type { ProviderProtocol } from "@chatverse/core";
 import { HttpError } from "./http/errors.js";
-import type { ProviderRequestConfig } from "./provider-config.js";
+import type { ProviderRequestConfig, ProviderRoleRequestConfig } from "./provider-config.js";
 import type { WorldDebugLogEntry } from "./rooms/room.js";
 import type { ProviderPair } from "./rooms/contracts.js";
 
@@ -46,48 +46,36 @@ export async function createEnvironmentProviders(config: ProviderRequestConfig =
     || sharedModel
     || undefined;
   const timeoutMs = configuredProviderTimeoutMs();
+  const baseConnection = {
+    protocol,
+    apiKey,
+    baseURL,
+    providerName,
+    providerOptions,
+    modelProfile,
+  };
+  const directorConnection = resolveRoleConnection(baseConnection, config.roleProviders?.director, directorModel);
+  const narratorConnection = resolveRoleConnection(baseConnection, config.roleProviders?.narrator, narratorModel);
+  const actorConnection = resolveRoleConnection(baseConnection, config.roleProviders?.actor, characterModel);
+  const studioConnection = resolveRoleConnection(baseConnection, config.roleProviders?.studio, authoringModel);
   const [directorProvider, narratorProvider, characterProvider, authoringProvider] = await Promise.all([
     createConfiguredProvider({
-      protocol,
-      apiKey,
-      baseURL,
-      providerName,
-      providerOptions,
-      modelProfile: profileForModel(modelProfile, directorModel),
-      model: directorModel,
+      ...directorConnection,
       timeoutMs,
       maxRetries: 0,
     }),
     createConfiguredProvider({
-      protocol,
-      apiKey,
-      baseURL,
-      providerName,
-      providerOptions,
-      modelProfile: profileForModel(modelProfile, narratorModel),
-      model: narratorModel,
+      ...narratorConnection,
       timeoutMs,
       maxRetries: 0,
     }),
     createConfiguredProvider({
-      protocol,
-      apiKey,
-      baseURL,
-      providerName,
-      providerOptions,
-      modelProfile: profileForModel(modelProfile, characterModel),
-      model: characterModel,
+      ...actorConnection,
       timeoutMs,
       maxRetries: 0,
     }),
     createConfiguredProvider({
-      protocol,
-      apiKey,
-      baseURL,
-      providerName,
-      providerOptions,
-      modelProfile: profileForModel(modelProfile, authoringModel),
-      model: authoringModel,
+      ...studioConnection,
       timeoutMs,
       maxRetries: 0,
     }),
@@ -97,6 +85,32 @@ export async function createEnvironmentProviders(config: ProviderRequestConfig =
     ? createWebResearchProvider(researchConfig)
     : undefined;
   return { directorProvider, narratorProvider, characterProvider, authoringProvider, researchProvider };
+}
+
+function resolveRoleConnection(
+  base: {
+    protocol: ProviderProtocol;
+    apiKey: string;
+    baseURL?: string;
+    providerName: string;
+    providerOptions?: Record<string, unknown>;
+    modelProfile?: ProviderModelProfile;
+  },
+  override: ProviderRoleRequestConfig | undefined,
+  fallbackModel: string | undefined,
+) {
+  const roleProtocol = override?.protocol ?? base.protocol;
+  const protocolChanged = roleProtocol !== base.protocol;
+  const model = override?.model?.trim() || fallbackModel;
+  return {
+    protocol: roleProtocol,
+    apiKey: override?.apiKey?.trim() || base.apiKey,
+    baseURL: override?.baseURL?.trim() || (protocolChanged ? defaultBaseURL(roleProtocol) : base.baseURL),
+    providerName: override?.providerName?.trim() || (protocolChanged ? defaultProviderName(roleProtocol) : base.providerName),
+    providerOptions: override?.providerOptions ?? (protocolChanged ? undefined : base.providerOptions),
+    modelProfile: protocolChanged ? undefined : profileForModel(base.modelProfile, model),
+    model,
+  };
 }
 
 function createConfiguredProvider(input: {

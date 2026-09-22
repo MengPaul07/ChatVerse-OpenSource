@@ -133,6 +133,7 @@ export function providerConfigKey(config?: ProviderRequestConfig): string | unde
     config.narratorModel,
     config.characterModel,
     config.authoringModel,
+    JSON.stringify(config.roleProviders ?? {}),
     config.research?.protocol,
     config.research?.providerName,
     config.research?.apiKey,

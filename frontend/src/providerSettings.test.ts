@@ -120,6 +120,39 @@ describe("provider settings", () => {
     expect(readProviderSettings().apiKey).toBe("old-secret");
   });
 
+  it("forwards independent provider connections for every agent role", () => {
+    const headers = providerRequestHeadersForSettings({
+      apiKey: "default-key",
+      baseURL: "https://default.example/v1",
+      model: "default-model",
+      roleProviders: {
+        director: {
+          preset: "anthropic",
+          protocol: "anthropic-messages",
+          providerName: "Anthropic",
+          apiKey: "director-key",
+          baseURL: "https://api.anthropic.com",
+          model: "claude-director",
+          providerOptions: { anthropic: { extendedThinking: true } },
+        },
+        actor: {
+          preset: "openai",
+          protocol: "openai-chat",
+          providerName: "OpenAI",
+          apiKey: "actor-key",
+          baseURL: "https://api.openai.com/v1",
+          model: "gpt-actor",
+          providerOptions: {},
+        },
+      },
+    });
+    const encoded = headers["X-ChatVerse-Role-Providers"];
+    expect(encoded).toMatch(/^chatverse-utf8:/);
+    const payload = JSON.parse(decodeURIComponent(encoded.slice("chatverse-utf8:".length)));
+    expect(payload.director).toMatchObject({ protocol: "anthropic-messages", apiKey: "director-key", model: "claude-director" });
+    expect(payload.actor).toMatchObject({ protocol: "openai-chat", apiKey: "actor-key", model: "gpt-actor" });
+  });
+
   it("defaults a persisted configuration without protocol to OpenAI Chat", () => {
     storage.set("chatverse:provider-settings", JSON.stringify({
       preset: "custom",

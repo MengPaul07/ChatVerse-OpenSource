@@ -10,6 +10,8 @@ import {
   readProviderSettings,
   saveProviderSettings,
   testProviderConnection,
+  type ProviderRole,
+  type RoleProviderSettings,
   type ProviderPreset,
 } from "../providerSettings";
 import {
@@ -68,6 +70,7 @@ function ModelSettingsPage() {
   const [narratorModel, setNarratorModel] = useState(initialSettings.narratorModel);
   const [actorModel, setActorModel] = useState(initialSettings.actorModel);
   const [studioModel, setStudioModel] = useState(initialSettings.studioModel);
+  const [roleProviders, setRoleProviders] = useState(initialSettings.roleProviders);
   const [providerOptions, setProviderOptions] = useState<Record<string, unknown>>(initialSettings.providerOptions);
   const [modelProfile, setModelProfile] = useState(initialSettings.modelProfile);
   const [isSaved, setIsSaved] = useState(() => Boolean(
@@ -145,6 +148,21 @@ function ModelSettingsPage() {
       setError("API Base URL 需要是有效的 http 或 https 地址，且不能包含账号密码。");
       return;
     }
+    for (const [role, connection] of Object.entries(roleProviders)) {
+      if (!connection?.apiKey.trim() || !connection.baseURL.trim() || !connection.model.trim()) {
+        setStatus("error");
+        setError(`${roleLabel(role as ProviderRole)} 的独立连接需要填写 Base URL、模型和 API Key。`);
+        return;
+      }
+      try {
+        const parsed = new URL(connection.baseURL);
+        if (!["http:", "https:"].includes(parsed.protocol) || parsed.username || parsed.password) throw new Error();
+      } catch {
+        setStatus("error");
+        setError(`${roleLabel(role as ProviderRole)} 的 API Base URL 无效。`);
+        return;
+      }
+    }
 
     const candidate = {
       apiKey: apiKey.trim(),
@@ -154,6 +172,7 @@ function ModelSettingsPage() {
       narratorModel: narratorModel.trim() || model.trim(),
       actorModel: actorModel.trim() || model.trim(),
       studioModel: studioModel.trim() || model.trim(),
+      roleProviders,
       protocol,
       providerName: providerName.trim() || "自定义服务商",
       preset,
@@ -167,6 +186,9 @@ function ModelSettingsPage() {
     setError("");
     try {
       await testProviderConnection(candidate, controller.signal);
+      await Promise.all(Object.values(roleProviders).map((connection) => connection
+        ? testProviderConnection(connection, controller.signal)
+        : Promise.resolve({ ok: true as const })));
       const saved = saveProviderSettings({
         ...candidate,
         providerOptions,
@@ -180,6 +202,7 @@ function ModelSettingsPage() {
       setNarratorModel(saved.narratorModel);
       setActorModel(saved.actorModel);
       setStudioModel(saved.studioModel);
+      setRoleProviders(saved.roleProviders);
       setProviderOptions(saved.providerOptions);
       setModelProfile(saved.modelProfile);
       setIsSaved(true);
@@ -211,6 +234,7 @@ function ModelSettingsPage() {
     setNarratorModel(empty.narratorModel);
     setActorModel(empty.actorModel);
     setStudioModel(empty.studioModel);
+    setRoleProviders(empty.roleProviders);
     setProviderOptions(empty.providerOptions);
     setModelProfile(empty.modelProfile);
     setIsSaved(false);
@@ -350,36 +374,42 @@ function ModelSettingsPage() {
         </label>
         <fieldset className="provider-role-models">
           <legend>角色模型路由</legend>
-          <p>四类任务可使用不同模型。留空时自动使用上方默认模型。</p>
-          <div className="provider-role-model-grid">
-            {[
-              { id: "studio-model", label: "Studio", hint: "世界创作、资料整理与草稿工具", value: studioModel, setValue: setStudioModel },
-              { id: "director-model", label: "Director", hint: "章节与角色回合规划", value: directorModel, setValue: setDirectorModel },
-              { id: "narrator-model", label: "Narrator", hint: "场景仲裁、旁白与下一位选择", value: narratorModel, setValue: setNarratorModel },
-              { id: "actor-model", label: "Actor", hint: "角色决策、台词与动作", value: actorModel, setValue: setActorModel },
-            ].map((role) => (
-              <label key={role.id} className="provider-settings-field provider-role-model-field" htmlFor={role.id}>
-                <span>{role.label}</span>
-                <input
-                  id={role.id}
-                  list="provider-model-suggestions"
-                  value={role.value}
-                  disabled={isTesting}
-                  onChange={(event) => {
-                    role.setValue(event.target.value);
-                    setIsSaved(false);
-                    setStatus("idle");
-                  }}
-                  placeholder={`默认：${model || "未设置"}`}
-                  spellCheck={false}
-                />
-                <small className="provider-settings-hint">{role.hint}</small>
-              </label>
+          <p>每一路都可以继承默认连接，或独立使用另一家厂商、协议、Key 与模型。</p>
+          <div className="provider-role-connections">
+            {([
+              ["studio", "Studio", "世界创作、资料整理与草稿工具", studioModel, setStudioModel],
+              ["director", "Director", "章节与角色回合规划", directorModel, setDirectorModel],
+              ["narrator", "Narrator", "场景仲裁、旁白与下一位选择", narratorModel, setNarratorModel],
+              ["actor", "Actor", "角色决策、台词与动作", actorModel, setActorModel],
+            ] as const).map(([role, label, hint, roleModel, setRoleModel]) => (
+              <RoleProviderEditor
+                key={role}
+                role={role}
+                label={label}
+                hint={hint}
+                defaultModel={model}
+                defaultPreset={preset}
+                inheritedModel={roleModel}
+                connection={roleProviders[role]}
+                disabled={isTesting}
+                onInheritedModelChange={(value) => {
+                  setRoleModel(value);
+                  setIsSaved(false);
+                  setStatus("idle");
+                }}
+                onChange={(value) => {
+                  setRoleProviders((current) => {
+                    const next = { ...current };
+                    if (value) next[role] = value;
+                    else delete next[role];
+                    return next;
+                  });
+                  setIsSaved(false);
+                  setStatus("idle");
+                }}
+              />
             ))}
           </div>
-          <datalist id="provider-model-suggestions">
-            {selectedPreset.models.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
-          </datalist>
         </fieldset>
         <div className="provider-settings-advice" role="note">
           <Lightbulb size={17} aria-hidden="true" />
@@ -425,6 +455,97 @@ function ModelSettingsPage() {
       />
     </div>
   );
+}
+
+function RoleProviderEditor({
+  role,
+  label,
+  hint,
+  defaultModel,
+  defaultPreset,
+  inheritedModel,
+  connection,
+  disabled,
+  onInheritedModelChange,
+  onChange,
+}: {
+  role: ProviderRole;
+  label: string;
+  hint: string;
+  defaultModel: string;
+  defaultPreset: ProviderPreset;
+  inheritedModel: string;
+  connection?: RoleProviderSettings;
+  disabled: boolean;
+  onInheritedModelChange(value: string): void;
+  onChange(value: RoleProviderSettings | undefined): void;
+}) {
+  const independent = Boolean(connection);
+  const definition = getProviderPresetDefinition(connection?.preset ?? defaultPreset);
+  function enableIndependent() {
+    const preset = definition;
+    onChange({
+      preset: preset.id,
+      protocol: providerProtocol(preset),
+      providerName: preset.providerName,
+      apiKey: "",
+      baseURL: preset.baseURL,
+      model: preset.models[0]?.id ?? inheritedModel ?? defaultModel,
+      providerOptions: preset.providerOptions ?? {},
+    });
+  }
+  function update(patch: Partial<RoleProviderSettings>) {
+    if (connection) onChange({ ...connection, ...patch });
+  }
+  function chooseRolePreset(preset: ProviderPreset) {
+    const next = getProviderPresetDefinition(preset);
+    update({
+      preset,
+      protocol: providerProtocol(next),
+      providerName: next.providerName,
+      baseURL: next.baseURL,
+      model: next.models[0]?.id ?? "",
+      providerOptions: next.providerOptions ?? {},
+    });
+  }
+  return (
+    <details className="provider-role-connection" open={independent}>
+      <summary>
+        <span><strong>{label}</strong><small>{hint}</small></span>
+        <em>{independent ? `${connection?.providerName} · ${connection?.model}` : `继承 · ${inheritedModel || defaultModel}`}</em>
+      </summary>
+      <div className="provider-role-connection-body">
+        <label className="provider-role-mode">
+          <input
+            type="checkbox"
+            checked={independent}
+            disabled={disabled}
+            onChange={(event) => event.target.checked ? enableIndependent() : onChange(undefined)}
+          />
+          <span>使用独立 Provider 连接</span>
+        </label>
+        {!independent ? (
+          <label className="provider-settings-field provider-role-model-field" htmlFor={`${role}-model`}>
+            <span>模型 ID</span>
+            <input id={`${role}-model`} value={inheritedModel} disabled={disabled} onChange={(event) => onInheritedModelChange(event.target.value)} placeholder={`默认：${defaultModel}`} spellCheck={false} />
+            <small className="provider-settings-hint">连接信息继承默认设置，仅覆盖模型。</small>
+          </label>
+        ) : connection ? (
+          <div className="provider-role-independent-grid">
+            <label className="provider-settings-field"><span>厂商</span><select value={connection.preset} disabled={disabled} onChange={(event) => chooseRolePreset(event.target.value as ProviderPreset)}>{PROVIDER_PRESETS.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label>
+            <label className="provider-settings-field"><span>协议</span><select value={connection.protocol} disabled={disabled || connection.preset !== "custom"} onChange={(event) => update({ protocol: event.target.value as ProviderProtocol })}><option value="openai-chat">OpenAI Chat</option><option value="openai-responses">OpenAI Responses</option><option value="anthropic-messages">Anthropic Messages</option></select></label>
+            <label className="provider-settings-field provider-role-wide"><span>API Base URL</span><input value={connection.baseURL} disabled={disabled} onChange={(event) => update({ baseURL: event.target.value })} spellCheck={false} /></label>
+            <label className="provider-settings-field"><span>模型 ID</span><input list={`${role}-model-suggestions`} value={connection.model} disabled={disabled} onChange={(event) => update({ model: event.target.value })} spellCheck={false} /><datalist id={`${role}-model-suggestions`}>{definition.models.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</datalist></label>
+            <label className="provider-settings-field"><span>API Key</span><input type="password" value={connection.apiKey} disabled={disabled} onChange={(event) => update({ apiKey: event.target.value })} autoComplete="off" spellCheck={false} /></label>
+          </div>
+        ) : null}
+      </div>
+    </details>
+  );
+}
+
+function roleLabel(role: ProviderRole): string {
+  return { studio: "Studio", director: "Director", narrator: "Narrator", actor: "Actor" }[role];
 }
 
 function ResearchProviderSettingsCard({ textSettings }: { textSettings: ReturnType<typeof readProviderSettings> }) {

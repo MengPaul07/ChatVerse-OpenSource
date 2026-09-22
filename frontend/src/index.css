@@ -2913,7 +2913,23 @@ button.group-row-main { width: 100%; cursor: pointer; }
 .provider-role-models > p { margin: 6px 0 0; color: var(--ink-tertiary); font-size: 12px; line-height: 18px; }
 .provider-role-model-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 16px; margin-top: 16px; }
 .provider-role-model-field { min-width: 0; margin-top: 0; }
+.provider-role-connections { display: grid; gap: 8px; margin-top: 16px; }
+.provider-role-connection { border-bottom: 1px solid var(--line); }
+.provider-role-connection:first-child { border-top: 1px solid var(--line); }
+.provider-role-connection summary { display: flex; min-height: 58px; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 4px; cursor: pointer; list-style: none; }
+.provider-role-connection summary::-webkit-details-marker { display: none; }
+.provider-role-connection summary > span { display: grid; min-width: 0; gap: 3px; }
+.provider-role-connection summary strong { color: var(--ink); font-size: 13px; }
+.provider-role-connection summary small { color: var(--ink-tertiary); font-size: 11px; font-weight: 400; }
+.provider-role-connection summary em { overflow: hidden; max-width: 48%; color: var(--ink-secondary); font-size: 11px; font-style: normal; text-overflow: ellipsis; white-space: nowrap; }
+.provider-role-connection-body { padding: 0 4px 18px; }
+.provider-role-mode { display: inline-flex; min-height: 36px; align-items: center; gap: 8px; color: var(--ink-secondary); font-size: 12px; cursor: pointer; }
+.provider-role-mode input { width: 16px; height: 16px; accent-color: var(--signal); }
+.provider-role-independent-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+.provider-role-independent-grid .provider-settings-field { margin-top: 16px; }
+.provider-role-wide { grid-column: 1 / -1; }
 @media (max-width: 640px) { .provider-role-model-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .provider-role-independent-grid { grid-template-columns: 1fr; } .provider-role-wide { grid-column: auto; } .provider-role-connection summary em { max-width: 42%; } }
 .provider-settings-advice > svg { flex: 0 0 auto; margin-top: 1px; color: #9b6a1f; }
 .provider-settings-advice > div { display: grid; min-width: 0; gap: 4px; }
 .provider-settings-advice strong { color: var(--ink); font-size: 12px; }
