@@ -61,6 +61,7 @@ export async function runPreview(input: {
   };
   const world = new ChatVerse({
     directorProvider: input.providers.directorProvider,
+    narratorProvider: input.providers.narratorProvider,
     characterProvider: input.providers.characterProvider,
   }).createWorld(previewDefinition, {
     debug: false,

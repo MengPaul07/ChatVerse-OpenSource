@@ -99,16 +99,38 @@ function resolveRoleConnection(
   override: ProviderRoleRequestConfig | undefined,
   fallbackModel: string | undefined,
 ) {
-  const roleProtocol = override?.protocol ?? base.protocol;
-  const protocolChanged = roleProtocol !== base.protocol;
-  const model = override?.model?.trim() || fallbackModel;
+  if (override) {
+    const apiKey = override.apiKey?.trim();
+    const baseURL = override.baseURL?.trim();
+    const model = override.model?.trim();
+    if (!apiKey || !baseURL || !model || !override.protocol) {
+      throw new HttpError(400, "invalid_provider_config", "独立 Provider 必须完整配置协议、API Key、Base URL 和模型。 ");
+    }
+    let url: URL;
+    try { url = new URL(baseURL); } catch {
+      throw new HttpError(400, "invalid_provider_config", "独立 Provider Base URL 无效。 ");
+    }
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || !isProviderProtocol(override.protocol)) {
+      throw new HttpError(400, "invalid_provider_config", "独立 Provider 地址或协议无效。 ");
+    }
+    return {
+      protocol: override.protocol,
+      apiKey,
+      baseURL,
+      providerName: override.providerName?.trim() || defaultProviderName(override.protocol),
+      providerOptions: override.providerOptions,
+      modelProfile: undefined,
+      model,
+    };
+  }
+  const model = fallbackModel;
   return {
-    protocol: roleProtocol,
-    apiKey: override?.apiKey?.trim() || base.apiKey,
-    baseURL: override?.baseURL?.trim() || (protocolChanged ? defaultBaseURL(roleProtocol) : base.baseURL),
-    providerName: override?.providerName?.trim() || (protocolChanged ? defaultProviderName(roleProtocol) : base.providerName),
-    providerOptions: override?.providerOptions ?? (protocolChanged ? undefined : base.providerOptions),
-    modelProfile: protocolChanged ? undefined : profileForModel(base.modelProfile, model),
+    protocol: base.protocol,
+    apiKey: base.apiKey,
+    baseURL: base.baseURL,
+    providerName: base.providerName,
+    providerOptions: base.providerOptions,
+    modelProfile: profileForModel(base.modelProfile, model),
     model,
   };
 }

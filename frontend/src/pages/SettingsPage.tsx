@@ -179,16 +179,16 @@ function ModelSettingsPage() {
       providerOptions,
       modelProfile,
     };
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 15_000);
     setIsTesting(true);
     setStatus("testing");
     setError("");
     try {
-      await testProviderConnection(candidate, controller.signal);
-      await Promise.all(Object.values(roleProviders).map((connection) => connection
-        ? testProviderConnection(connection, controller.signal)
-        : Promise.resolve({ ok: true as const })));
+      await testNamedProviderConnection("默认连接", candidate);
+      const results = await Promise.allSettled(Object.entries(roleProviders).map(([role, connection]) => connection
+        ? testNamedProviderConnection(roleLabel(role as ProviderRole), connection)
+        : Promise.resolve()));
+      const failures = results.filter((result): result is PromiseRejectedResult => result.status === "rejected");
+      if (failures.length) throw new Error(failures.map((result) => result.reason instanceof Error ? result.reason.message : "连接测试失败").join("；"));
       const saved = saveProviderSettings({
         ...candidate,
         providerOptions,
@@ -215,7 +215,6 @@ function ModelSettingsPage() {
         ? "连接测试超时，请检查地址、网络和服务商状态。"
         : cause instanceof Error ? cause.message : "模型连接测试失败，请检查配置。");
     } finally {
-      window.clearTimeout(timeout);
       setIsTesting(false);
     }
   }
@@ -542,6 +541,18 @@ function RoleProviderEditor({
       </div>
     </details>
   );
+}
+
+async function testNamedProviderConnection(label: string, settings: Parameters<typeof testProviderConnection>[0]): Promise<void> {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 90_000);
+  try {
+    await testProviderConnection(settings, controller.signal);
+  } catch (error) {
+    throw new Error(`${label}：${error instanceof Error && error.name === "AbortError" ? "连接测试超时" : error instanceof Error ? error.message : "连接测试失败"}`);
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }
 
 function roleLabel(role: ProviderRole): string {

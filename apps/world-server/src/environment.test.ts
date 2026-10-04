@@ -229,6 +229,17 @@ describe("environment provider selection", () => {
     expect(mocks.chat).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "actor-key", model: "actor-model" }));
     expect(mocks.chat).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "studio-key", model: "studio-model" }));
   });
+
+  it("rejects an incomplete independent connection without borrowing the default key", async () => {
+    await expect(createEnvironmentProviders({
+      apiKey: "default-key",
+      model: "default-model",
+      roleProviders: {
+        actor: { protocol: "openai-chat", baseURL: "https://actor.example/v1", model: "actor-model" },
+      },
+    })).rejects.toThrow("独立 Provider 必须完整配置");
+    expect(mocks.chat).not.toHaveBeenCalled();
+  });
 });
 
 function provider(config: Record<string, unknown>): Record<string, unknown> {

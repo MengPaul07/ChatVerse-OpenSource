@@ -64,7 +64,14 @@ export async function handleSystemRoute(input: SystemRouteInput): Promise<boolea
     await readJson(request);
     let providers: Awaited<ReturnType<ProviderFactory>> | undefined;
     try {
-      providers = await providerFactory(providerConfig);
+      providers = await providerFactory(providerConfig ? {
+        ...providerConfig,
+        roleProviders: undefined,
+        directorModel: providerConfig.model,
+        narratorModel: providerConfig.model,
+        characterModel: providerConfig.model,
+        authoringModel: providerConfig.model,
+      } : undefined);
       await providers.directorProvider.chat({
         messages: [
           { role: "system", content: "You are a connection test. Reply with OK only." },
